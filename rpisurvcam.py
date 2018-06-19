@@ -22,18 +22,17 @@ os.environ['TZ'] = 'Europe/Vilnius'
 
 
 def main():
-#    while True:
-#        pir.wait_for_motion()
-#        if pir.motion_detected:
-#            send_pics()
-#            time.sleep(5)
-#            clear_img_dir()
-    send_pics()
-    time.sleep(5)
-    clear_img_dir()
+    while True:
+        sensor_pin.wait_for_motion()
+        if sensor_pin.motion_detected:
+            print('d')
+            send_pics()
+            time.sleep(5)
+            clear_img_dir()
+        sensor_pin.wait_for_no_motion()
 
 def send_pics():
-    for i in range(5):
+    for i in range(3):
         camera.capture('/home/pi/images/image_{}.jpeg'.format(time.strftime('%H:%M:%S')))
         time.sleep(2)
 
