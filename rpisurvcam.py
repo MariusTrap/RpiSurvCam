@@ -7,7 +7,7 @@ import os
 import subprocess
 
 #check for internet access
-import urlib2
+import urllib3
 
 import logging
 logging.basicConfig(filename='./rpicam.log', level=logging.DEBUG)
@@ -40,9 +40,9 @@ def main():
         sensor_pin.wait_for_no_motion()
 
 def send_pics():
-	if not internet_on():
-		logging.info(time.strftime('%H:%M:%S'))
-		return
+    if not internet_on():
+        logging.info(time.strftime('%H:%M:%S'))
+        return
     for i in range(3):
         camera.capture('/home/pi/images/image_{}.jpeg'.format(time.strftime('%H:%M:%S')))
         time.sleep(2)
@@ -80,10 +80,15 @@ def send_sms():
 
 def internet_on():
     try:
-        urllib2.urlopen('http://216.58.192.142', timeout=1)
-        return True
-    except urllib2.URLError as err: 
+        http = urllib3.PoolManager()
+        response = http.request('GET', 'www.netbsd.org')
+        if response.status == 200:
+            return True
+        else:
+            return False
+    except:
         return False
+
 
 if __name__ == '__main__':
     main()
