@@ -4,6 +4,14 @@ from gpiozero import MotionSensor
 from picamera import PiCamera
 import time
 import os
+import subprocess
+
+#check for internet access
+import urlib2
+
+import logging
+logging.basicConfig(filename='./rpicam.log', level=logging.DEBUG)
+
 #for email
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -25,13 +33,16 @@ def main():
     while True:
         sensor_pin.wait_for_motion()
         if sensor_pin.motion_detected:
-            print('d')
+            send_sms()
             send_pics()
             time.sleep(5)
             clear_img_dir()
         sensor_pin.wait_for_no_motion()
 
 def send_pics():
+	if not internet_on():
+		logging.info(time.strftime('%H:%M:%S'))
+		return
     for i in range(3):
         camera.capture('/home/pi/images/image_{}.jpeg'.format(time.strftime('%H:%M:%S')))
         time.sleep(2)
@@ -64,6 +75,15 @@ def clear_img_dir():
     for filename in os.listdir('/home/pi/images'):
         os.rename('/home/pi/images/{}'.format(filename), '/home/pi/sentimages/{}'.format(filename))
 
+def send_sms():
+    subprocess.call(['/usr/bin/python3', '/home/pi/scripts/sms/sms.py'])
+
+def internet_on():
+    try:
+        urllib2.urlopen('http://216.58.192.142', timeout=1)
+        return True
+    except urllib2.URLError as err: 
+        return False
 
 if __name__ == '__main__':
     main()
